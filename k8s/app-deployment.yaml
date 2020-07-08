@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-app
+  labels:
+    app: go-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-app
+  template:
+    metadata:
+      labels:
+        app: go-app
+    spec:
+      containers:
+      - image: hcausevic5/go-influxdb-simple-app
+        name: go-app
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4444
+        volumeMounts:
+        - name: influx-creds
+          mountPath: /app/influxdb
+          readOnly: true
+      volumes:
+      - name: influx-creds
+        secret:
+          secretName: influxdb-auth-demo

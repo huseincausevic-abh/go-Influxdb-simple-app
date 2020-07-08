@@ -1,0 +1,51 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: influxdb-set-authentication
+  labels:
+    app: influxdb-demo
+spec:
+  activeDeadlineSeconds: 60
+  template:
+    metadata:
+      labels:
+        app: influxdb-demo
+    spec:
+      serviceAccountName: api-service-account
+      restartPolicy: OnFailure
+      containers:
+        - name: influxdb-set-authentication
+          image: 864627408630.dkr.ecr.us-east-1.amazonaws.com/ci:kubectl
+          env:
+            - name: URL
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-auth-demo
+                  key: url
+            - name: USER
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-auth-demo
+                  key: username
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-auth-demo
+                  key: password
+            - name: ORG
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-auth-demo
+                  key: org
+            - name: BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-auth-demo
+                  key: bucket
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              'DATA="{\"username\":\"${USER}\",\"password\":\"${PASSWORD}\",\"org\":\"${ORG}\",\"bucket\":\"${BUCKET}\",\"retentionPeriodHrs\":24}" && TOKEN=$(curl --request POST --url "${URL}/api/v2/setup" --header "Content-Type: application/json" --data ${DATA} | jq ".auth.token" -r) && kube_data="{\"data\":{\"token\":\"$(echo -n ${TOKEN} | base64 -w 0)\"}}" &&  kubectl patch secret influxdb-auth-demo -p=$kube_data -v=1',
+            ]
