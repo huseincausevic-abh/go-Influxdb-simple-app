@@ -69,6 +69,10 @@ if [[ ${MODE} == "apply" || ${MODE} == "recreate" ]]; then
   kubectl apply -f influxdb-service.yaml -n ${NAMESPACE};
   kubectl apply -f influxdb-statefulset.yaml -n ${NAMESPACE};
   check_if_pod_is_running
+  if [[ $? == 1 ]]
+  then
+    die
+  fi
   kubectl apply -f influxdb-auth-job.yaml -n ${NAMESPACE};
   kubectl apply -f app-service.yaml -n ${NAMESPACE}
   sleep 2
