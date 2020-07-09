@@ -39,4 +39,5 @@ func postTemperature(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	Write(temperature)
+	json.NewEncoder(w).Encode("New point successfully written !")
 }
